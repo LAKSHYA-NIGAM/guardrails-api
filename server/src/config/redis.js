@@ -2,14 +2,10 @@ import Redis from 'ioredis';
 import dotenv from 'dotenv';
 dotenv.config();
 
-const redisHost = process.env.REDIS_HOST || '127.0.0.1';
-const redisPort = parseInt(process.env.REDIS_PORT || '6379', 10);
-
 let isConnected = false;
+let redisClient;
 
-export const redis = new Redis({
-  host: redisHost,
-  port: redisPort,
+const redisOptions = {
   retryStrategy(times) {
     const delay = Math.min(times * 200, 3000);
     return delay;
@@ -18,11 +14,34 @@ export const redis = new Redis({
   enableReadyCheck: true,
   lazyConnect: false,
   commandTimeout: 4000
-});
+};
+
+if (process.env.REDIS_URL) {
+  // Support cloud connection strings (Upstash, Redis Cloud, Render, etc.)
+  redisClient = new Redis(process.env.REDIS_URL, {
+    ...redisOptions,
+    tls: process.env.REDIS_URL.startsWith('rediss://') ? { rejectUnauthorized: false } : undefined
+  });
+} else {
+  const redisHost = process.env.REDIS_HOST || '127.0.0.1';
+  const redisPort = parseInt(process.env.REDIS_PORT || '6379', 10);
+  const redisPassword = process.env.REDIS_PASSWORD || undefined;
+  const useTls = process.env.REDIS_TLS === 'true';
+
+  redisClient = new Redis({
+    host: redisHost,
+    port: redisPort,
+    password: redisPassword,
+    tls: useTls ? { rejectUnauthorized: false } : undefined,
+    ...redisOptions
+  });
+}
+
+export const redis = redisClient;
 
 redis.on('connect', () => {
   isConnected = true;
-  console.log(`[Redis] Connection established with ${redisHost}:${redisPort}`);
+  console.log('[Redis] Connection established with Redis cache layer');
 });
 
 redis.on('ready', () => {
