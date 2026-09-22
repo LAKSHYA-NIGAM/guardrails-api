@@ -1,6 +1,7 @@
 version: '3.8'
 
 services:
+  # Database Layer
   mongo:
     image: mongo:7
     container_name: guardrails-mongo
@@ -9,7 +10,10 @@ services:
     volumes:
       - mongo_data:/data/db
     restart: unless-stopped
+    networks:
+      - guardrails-network
 
+  # In-Memory Cache & State Layer
   redis:
     image: redis:7-alpine
     container_name: guardrails-redis
@@ -18,7 +22,54 @@ services:
     volumes:
       - redis_data:/data
     restart: unless-stopped
+    networks:
+      - guardrails-network
+
+  # Express Backend Microservice
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: guardrails-server
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - MONGODB_URI=mongodb://mongo:27017/guardrails_db
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - JWT_SECRET=guardrails_super_secret_jwt_key_2026
+      - BOT_COMMENT_CAP=100
+      - COOLDOWN_MINUTES=10
+      - NOTIFICATION_COOLDOWN_MINUTES=15
+      - VIRALITY_DECAY_INTERVAL_MS=300000
+      - VIRALITY_DECAY_FACTOR=0.9
+      - NOTIFICATION_SWEEP_INTERVAL_MS=300000
+    depends_on:
+      - mongo
+      - redis
+    restart: unless-stopped
+    networks:
+      - guardrails-network
+
+  # React Frontend Dashboard
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: guardrails-client
+    ports:
+      - "3000:3000"
+    depends_on:
+      - server
+    restart: unless-stopped
+    networks:
+      - guardrails-network
 
 volumes:
   mongo_data:
   redis_data:
+
+networks:
+  guardrails-network:
+    driver: bridge
