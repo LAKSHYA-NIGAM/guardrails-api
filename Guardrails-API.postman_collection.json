@@ -1,0 +1,221 @@
+{
+  "info": {
+    "name": "Guardrails MERN API",
+    "description": "Postman collection for Guardrails MERN Anti-Abuse & Concurrency Engine — Auth, Rate Limiting, Idempotency, Posts, Comments, Likes, Notifications, and Virality.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "postId",
+      "value": "1"
+    },
+    {
+      "key": "userId",
+      "value": "1"
+    },
+    {
+      "key": "botId",
+      "value": "1"
+    },
+    {
+      "key": "authToken",
+      "value": ""
+    },
+    {
+      "key": "botApiKey",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "0. Authentication",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"lakshya_dev\",\n  \"password\": \"password123\",\n  \"isPremium\": true\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/register", "host": ["{{baseUrl}}"], "path": ["api", "auth", "register"] }
+          }
+        },
+        {
+          "name": "Login User",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"lakshya_dev\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"] }
+          }
+        },
+        {
+          "name": "Get Current User (/auth/me)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/auth/me", "host": ["{{baseUrl}}"], "path": ["api", "auth", "me"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "1. Agents & Users",
+      "item": [
+        {
+          "name": "Create User",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"lakshya\",\n  \"isPremium\": true\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/users", "host": ["{{baseUrl}}"], "path": ["api", "users"] }
+          }
+        },
+        {
+          "name": "Create Bot (Generates API Key)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"SentinelBot\",\n  \"personaDescription\": \"Automated security and moderation agent\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/bots", "host": ["{{baseUrl}}"], "path": ["api", "bots"] }
+          }
+        },
+        {
+          "name": "Get All Bots",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/bots", "host": ["{{baseUrl}}"], "path": ["api", "bots"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Posts",
+      "item": [
+        {
+          "name": "Create Post (With Idempotency)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Idempotency-Key", "value": "post-create-sample-uuid-1" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"authorId\": {{userId}},\n  \"authorType\": \"USER\",\n  \"content\": \"Hello world! High-concurrency post test.\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/posts", "host": ["{{baseUrl}}"], "path": ["api", "posts"] }
+          }
+        },
+        {
+          "name": "Get All Posts",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/posts", "host": ["{{baseUrl}}"], "path": ["api", "posts"] }
+          }
+        },
+        {
+          "name": "Get Top Viral Posts",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/posts/top-viral?limit=10", "host": ["{{baseUrl}}"], "path": ["api", "posts", "top-viral"], "query": [{ "key": "limit", "value": "10" }] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Comments & Guardrails",
+      "item": [
+        {
+          "name": "Add Human Comment (+50 Virality)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"authorId\": {{userId}},\n  \"authorType\": \"USER\",\n  \"content\": \"Great post! Human discussion.\",\n  \"depthLevel\": 0\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/posts/{{postId}}/comments", "host": ["{{baseUrl}}"], "path": ["api", "posts", "{{postId}}", "comments"] }
+          }
+        },
+        {
+          "name": "Add Bot Comment (Authenticated with X-API-Key)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-API-Key", "value": "{{botApiKey}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"authorId\": {{botId}},\n  \"authorType\": \"BOT\",\n  \"content\": \"Automated reply verifying 100 bot cap guardrail.\",\n  \"depthLevel\": 1\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/posts/{{postId}}/comments", "host": ["{{baseUrl}}"], "path": ["api", "posts", "{{postId}}", "comments"] }
+          }
+        },
+        {
+          "name": "Get Comments for Post",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/posts/{{postId}}/comments", "host": ["{{baseUrl}}"], "path": ["api", "posts", "{{postId}}", "comments"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Likes",
+      "item": [
+        {
+          "name": "Like Post (Duplicate-Safe)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"userName\": \"lakshya_dev\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/posts/{{postId}}/like", "host": ["{{baseUrl}}"], "path": ["api", "posts", "{{postId}}", "like"] }
+          }
+        },
+        {
+          "name": "Unlike Post",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/api/posts/{{postId}}/like/lakshya_dev", "host": ["{{baseUrl}}"], "path": ["api", "posts", "{{postId}}", "like", "lakshya_dev"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Notifications",
+      "item": [
+        {
+          "name": "Get Pending Notifications",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/notifications/pending", "host": ["{{baseUrl}}"], "path": ["api", "notifications", "pending"] }
+          }
+        },
+        {
+          "name": "Flush All Pending Notifications",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/api/notifications/flush", "host": ["{{baseUrl}}"], "path": ["api", "notifications", "flush"] }
+          }
+        }
+      ]
+    }
+  ]
+}
