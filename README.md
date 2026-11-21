@@ -1,5 +1,11 @@
 # 🛡️ Guardrails MERN — Anti-Abuse, Rate-Limiting & Concurrency Engine
 
+
+[![Guardrails CI](https://github.com/LAKSHYA-NIGAM/guardrails-api/actions/workflows/ci.yml/badge.svg)](https://github.com/LAKSHYA-NIGAM/guardrails-api/actions/workflows/ci.yml)
+[![Node Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org/)
+[![Database](https://img.shields.io/badge/database-MongoDB%20%2B%20Redis%207-green.svg)](https://redis.io/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 A **production-minded distributed anti-abuse and atomic concurrency engine** built on the MERN stack (Node.js, Express, React, MongoDB) and backed by **Redis 7 (`ioredis`)**.
 
 Designed to demonstrate how high-scale platforms (like Reddit, Twitter, and Stripe) enforce sub-millisecond rate limiting, anti-spam throttling, duplicate write prevention (idempotency), nested reply depth limits, virality scoring with decay, and intelligent notification batching without distributed race conditions or database lock exhaustion.
@@ -283,6 +289,21 @@ npm run dev
 ---
 
 ## 🧪 Automated Test Suite & Concurrency Verification
+
+### Running Isolated Unit Tests (Zero-Dependency)
+Execute fast, zero-dependency unit tests covering virality decay calculation, idempotency cache status, and rate limiter fallback:
+
+```bash
+cd server
+npm test
+```
+
+### Running Full Integration Suite (Live Redis & MongoDB)
+```bash
+cd server
+npm run test:integration
+```
+
 
 The integration test suite runs directly against MongoDB and Redis to assert all 9 core contracts:
 
