@@ -1,7 +1,7 @@
 {
   "name": "guardrails-mern",
   "version": "2.0.0",
-  "description": "Guardrails MERN Anti-Abuse & Concurrency Engine",
+  "description": "Guardrails MERN Anti-Abuse, Rate-Limiting & Concurrency Engine (Node.js, Express, MongoDB, Redis, React)",
   "type": "module",
   "scripts": {
     "build": "cd client && npm install && npm run build",
