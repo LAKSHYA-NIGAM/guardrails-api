@@ -1,3 +1,5 @@
+import mongoose from 'mongoose';
+import { isRedisConnected } from '../config/redis.js';
 import { Router } from 'express';
 import * as userController from '../controllers/userController.js';
 import * as botController from '../controllers/botController.js';
