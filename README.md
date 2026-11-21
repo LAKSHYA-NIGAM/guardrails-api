@@ -100,6 +100,14 @@ flowchart TD
 - **Weights**: Human Like = **+20**, Human Comment = **+50**, Bot Interaction = **+1**.
 - **Scheduled Decay**: A background scheduler fires every 5 minutes (`300000ms`), multiplying all active scores by `0.9` (10% decay) to ensure older posts naturally yield top spots to fresh engagement.
 
+### 7. PII Masking & Redaction Engine (`piiGuardrail.js`)
+- **Real-Time Data Sanitization**: Inspects incoming payload streams for high-risk PII including RFC 5322 email patterns, E.164 phone numbers, US SSNs, and payment card numbers.
+- **Luhn Modulo-10 Checksum Validation**: Unlike naive 16-digit regex scrapers, the engine validates ISO/IEC 7812 credit card numbers against the Luhn algorithm before masking with `[CREDIT_CARD_REDACTED]`, eliminating false positives on benign numeric strings.
+
+### 8. Token Bucket Traffic Shaper (`tokenBucketGuardrail.js`)
+- **Burst-Tolerant Rate Limiting**: Implements a continuous-fill token bucket algorithm allowing clients to consume bursts up to bucket capacity while enforcing smooth steady-state replenishment rates.
+- **Dynamic Cost Accounting**: Supports variable token weights per request (e.g. lightweight reads consume 1 token, heavy LLM/concurrency evaluations consume 5 tokens). Isolated per client identity.
+
 ### 6. Smart Notification Batching & Flush
 - **Key Patterns**:
   - Cooldown Lock: `user:<userId>:notif_cooldown` (TTL 15 min)
